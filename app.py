@@ -10,11 +10,7 @@ from talisman import Talisman
 import random
 
 
-@app.after_request
-def apply_csp_headers(response):
-    # Customize the Content Security Policy as needed
-    response.headers['Content-Security-Policy'] = "default-src 'self'; style-src 'self' cdn.jsdelivr.net; script-src 'self' kit.fontawesome.com"
-    return response
+
 
 MAX_RESULTS_PER_PAGE = 50
 MAX_VIDEOS_LIMIT = 500
@@ -41,7 +37,11 @@ CORS(app)
 
 # Enable security headers
 Talisman(app)
-
+@app.after_request
+def apply_csp_headers(response):
+    # Customize the Content Security Policy as needed
+    response.headers['Content-Security-Policy'] = "default-src 'self'; style-src 'self' cdn.jsdelivr.net; script-src 'self' kit.fontawesome.com"
+    return response
 def get_id(playlist_link):
     p = re.compile('^([\S]+list=)?([\w_-]+)[\S]*$')
     m = p.match(playlist_link)
