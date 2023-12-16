@@ -7,10 +7,17 @@ from flask import Flask, Response, request, render_template
 import isodate
 from flask_cors import CORS
 from talisman import Talisman
+import random
+
+
+@app.after_request
+def apply_csp_headers(response):
+    # Customize the Content Security Policy as needed
+    response.headers['Content-Security-Policy'] = "default-src 'self'; style-src 'self' cdn.jsdelivr.net; script-src 'self' kit.fontawesome.com"
+    return response
 
 MAX_RESULTS_PER_PAGE = 50
 MAX_VIDEOS_LIMIT = 500
-MAX_TIME_SLICE = 10
 
 # Set your secret key
 SECRET_KEY = os.environ.get('SECRET')
@@ -61,16 +68,6 @@ def today_at(hr, min=0, sec=0, micros=0):
     now = datetime.now()
     return now.replace(hour=hr, minute=min, second=sec, microsecond=micros)
 
-def find_time_slice():
-    time_slices = [0, 4, 8, 12, 16, 20, 22, 24]
-    time_now = datetime.now()
-
-    for i in range(len(time_slices) - 1):
-        if today_at(time_slices[i]) <= time_now < today_at(time_slices[i + 1]):
-            return i
-
-    return MAX_TIME_SLICE
-
 @app.route("/", methods=['GET', 'POST'])
 def home():
     if request.method == 'GET':
@@ -81,14 +78,15 @@ def home():
         next_page = ''
         cnt = 0
         total_duration = timedelta(0)
-        time_slice = find_time_slice()
+        # Use a random API key for each request
+        api_key = random.choice(APIS)
         display_text = []
 
         while True:
             video_ids = []
 
             try:
-                results = json.loads(requests.get(URL1.format(MAX_RESULTS_PER_PAGE, APIS[time_slice], playlist_id) + next_page).text)
+                results = json.loads(requests.get(URL1.format(MAX_RESULTS_PER_PAGE, api_key, playlist_id) + next_page).text)
 
                 for item in results.get('items', []):
                     video_ids.append(item['contentDetails']['videoId'])
@@ -101,7 +99,7 @@ def home():
             cnt += len(video_ids)
 
             try:
-                op = json.loads(requests.get(URL2.format(url_list, APIS[time_slice])).text)
+                op = json.loads(requests.get(URL2.format(url_list, api_key)).text)
 
                 for item in op.get('items', []):
                     total_duration += isodate.parse_duration(item['contentDetails']['duration'])
