@@ -5,28 +5,40 @@ import re
 import requests
 from flask import Flask, Response, request, render_template
 import isodate
+from flask_cors import CORS
+from talisman import Talisman
 
 MAX_RESULTS_PER_PAGE = 50
 MAX_VIDEOS_LIMIT = 500
+MAX_TIME_SLICE = 10
+
+# Set your secret key
+SECRET_KEY = os.environ.get('SECRET')
+
+# Set your API keys as environment variables
 APIS = os.environ.get('APIS')
 
 if not APIS:
     raise ValueError('APIS environment variable not set')
 
 APIS = APIS.strip('][').split(',')
-MAX_TIME_SLICE = 10
 
 URL1 = 'https://www.googleapis.com/youtube/v3/playlistItems?part=contentDetails&maxResults={}&fields=items/contentDetails/videoId,nextPageToken&key={}&playlistId={}&pageToken='
 URL2 = 'https://www.googleapis.com/youtube/v3/videos?&part=contentDetails&id={}&key={}&fields=items/contentDetails/duration'
 
 app = Flask(__name__, static_url_path='/static')
+app.secret_key = SECRET_KEY
 
+# Enable CORS for all routes
+CORS(app)
+
+# Enable security headers
+Talisman(app)
 
 def get_id(playlist_link):
     p = re.compile('^([\S]+list=)?([\w_-]+)[\S]*$')
     m = p.match(playlist_link)
     return m.group(2) if m else 'invalid_playlist_link'
-
 
 def parse_duration(a):
     ts, td = a.seconds, a.days
@@ -45,11 +57,9 @@ def parse_duration(a):
 
     return ds.strip().strip(',') if ds else '0 seconds'
 
-
 def today_at(hr, min=0, sec=0, micros=0):
     now = datetime.now()
     return now.replace(hour=hr, minute=min, second=sec, microsecond=micros)
-
 
 def find_time_slice():
     time_slices = [0, 4, 8, 12, 16, 20, 22, 24]
@@ -60,7 +70,6 @@ def find_time_slice():
             return i
 
     return MAX_TIME_SLICE
-
 
 @app.route("/", methods=['GET', 'POST'])
 def home():
@@ -119,7 +128,6 @@ def home():
 
         return render_template("home.html", display_text=display_text)
 
-
 @app.route("/healthz", methods=['GET', 'POST'])
 def healthz():
     try:
@@ -128,20 +136,17 @@ def healthz():
     except Exception as e:
         return f"Error: {e}", 500
 
-
 @app.route('/.well-known/brave-rewards-verification.txt')
 def static_from_root_brave():
     return Response(
         'This is a Brave Rewards publisher verification file.\n\nDomain: ytplaylist-len.herokuapp.com\nToken: aae68b8a5242a8e5f0505ee6eaa406bd51edf0dc9a05294be196495df223385c',
         mimetype='text/plain')
 
-
 @app.route('/ads.txt')
 def static_from_root_google():
     return Response(
         'google.com, pub-8874895270666721, DIRECT, f08c47fec0942fa0',
         mimetype='text/plain')
-
 
 if __name__ == "__main__":
     app.run(use_reloader=True, debug=False)
