@@ -42,10 +42,10 @@ Before running the application, ensure you have the following:
 1. Set the `APIS` environment variable with your YouTube Data API keys:
 
    ```bash
-   export APIS="[your_api_key_1, your_api_key_2],...."
+   export APIS="[your_api_key_1, your_api_key_2,....]"
    ```
 
-   Replace `[your_api_key_1, your_api_key_2],....` with your actual API keys. Separate multiple keys with commas.
+   Replace `[your_api_key_1, your_api_key_2,....]` with your actual API keys. Separate multiple keys with commas.
 
 2. Set your Flask secret key. Update the `SECRET_KEY` variable in `app.py`:
 
