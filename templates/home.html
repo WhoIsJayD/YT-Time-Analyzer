@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+  <meta name="description" content="Get the total length/duration of a YouTube playlist by passing its link as input. You get the time required to watch that playlist at different speeds.">
+  <link rel="icon" href="{{url_for('static', filename='favicon.png')}}">
+  <title>YouTube Playlist Length</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="font-sans antialiased bg-gray-800 text-white">
+  <div class="min-h-screen flex items-center justify-center">
+    <!-- Content wrapper start -->
+    <div class="bg-gray-900 p-10 rounded-md shadow-md w-full max-w-md">
+      <h2 class="text-center text-2xl font-bold mb-4 text-cyan-500">Playlist Length</h2>
+      <form method="POST">
+        <div class="flex items-center">
+          <label for="playlistInput" class="sr-only">YouTube Playlist URL/ID</label>
+          <input type="text" id="playlistInput" autofocus="autofocus" class="form-input rounded-l-md p-2 flex-1" placeholder="youtube.com/playlist?list=ID" name="search_string">
+        </div>
+        <div id="emailHelp" class="mt-5">
+          You can enter a playlist link, playlist ID, or even a video link from the playlist!<br><br>
+          This only works with playlists with up to 500 videos. Need more than that?
+          <a href="https://colab.research.google.com/drive/1D0nbJVcFMHmQyNFVpoL65LOUiejA-bAc" class="text-blue-500 hover:underline">Check here.</a>
+        </div>
+      </form>
+      <div class="mt-8">
+        <!-- Separator line -->
+        <hr class="border-t-2 border-gray-700 mb-6">
+        {% if display_text %}
+          {% for x in display_text %}
+            <p class="mb-2">{{x | safe}}</p>
+          {% endfor %}
+        {% endif %}
+      </div>
+    </div>
+    <!-- Content wrapper end -->
+  </div>
+  <script src="https://kit.fontawesome.com/b9b97931ac.js" crossorigin="anonymous"></script>
+</body>
+</html>
